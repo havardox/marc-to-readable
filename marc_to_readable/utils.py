@@ -1,15 +1,18 @@
 import os
 from pathlib import Path
 import tarfile
-from xml.dom import minidom
 import zipfile
+from typing import Union, Optional
 
 import py7zr
 import requests
 
 
 def download_file(
-    url: str, folder: os.PathLike | str, filename: str | None = None, **requests_kwargs
+    url: str,
+    folder: Union[os.PathLike, str],
+    filename: Optional[str] = None,
+    **requests_kwargs
 ) -> Path:
     download_path = Path(folder)
     download_path.mkdir(parents=True, exist_ok=True)
@@ -17,12 +20,12 @@ def download_file(
     response = requests.get(url, **requests_kwargs)
     response.raise_for_status()
     if filename is None:
-        content_dispostion = response.headers.get("content-disposition")
-        if content_dispostion is None:
+        content_disposition = response.headers.get("content-disposition")
+        if content_disposition is None:
             raise ValueError(
-                "Unable to determine filename because no Content-Dispositon header was found for the request performed on the URL. Please provide the download_filename argument."
+                "Unable to determine filename because no Content-Disposition header was found for the request performed on the URL. Please provide the download_filename argument."
             )
-        filename = content_dispostion.split("=", -1)[-1]
+        filename = content_disposition.split("=", -1)[-1]
 
     download_path = download_path / filename
 
@@ -32,7 +35,8 @@ def download_file(
 
 
 def extract_archive(
-    archive_path: os.PathLike | str, extract_to: os.PathLike | str
+    archive_path: Union[os.PathLike, str],
+    extract_to: Union[os.PathLike, str]
 ) -> Path:
     archive_path = Path(archive_path)
     extract_to = Path(extract_to)

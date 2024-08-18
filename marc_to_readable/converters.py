@@ -43,6 +43,7 @@ def get_stripped_subfield(field: Field, subfield_code: str) -> Optional[str]:
 
 NUMBER_REGEX = re.compile(r"\d+", re.IGNORECASE)
 BETWEEN_SQUARE_BRACKETS_REGEX = re.compile(r"\[(.*?)\]|(.*)", re.IGNORECASE)
+YEAR_REGEX = re.compile(r"\d{4}")
 
 
 def marcxml_to_readable(
@@ -77,18 +78,16 @@ def marcxml_to_readable(
         if author:
             result.authors.append(author)
 
-        for field in record.get_fields("700"):
-            author = get_stripped_subfield(field, "a")
-            if author and author not in result.authors:
-                result.authors.append(author)
-
         pub_field = record.get("260")
         if pub_field:
             # Extract Publisher (Field 260 - subfield b)
             result.publisher = get_stripped_subfield(pub_field, "b")
 
             # Extract Year Published (Field 260 - subfield c)
-            result.year_published = get_stripped_subfield(pub_field, "c")
+            year_published_subfield = get_stripped_subfield(pub_field, "c")
+            if year_published_subfield:
+                year_published = re.search(YEAR_REGEX, year_published_subfield)
+                result.year_published = year_published.group() if year_published else None
 
             # Extract City Published (Field 260 - subfield a)
             city_published_subfield = get_stripped_subfield(pub_field, "a")
@@ -155,19 +154,22 @@ def marcxml_to_readable(
             )
             name = get_stripped_subfield(field, "a")
             if role and name:
-                if "toimetaja" in role.lower():
+                role = role.lower()
+                if "autor" in role and name not in result.authors:
+                    result.authors.append(name)
+                if "toimetaja" in role:
                     result.editors.append(name)
-                elif "väljaandja" in role.lower():
+                elif "väljaandja" in role:
                     result.publishers.append(name)
-                elif "koostaja" in role.lower():
+                elif "koostaja" in role:
                     result.compilers.append(name)
-                elif "illustreerija" in role.lower():
+                elif "illustreerija" in role:
                     result.illustrators.append(name)
-                elif "tõlkija" in role.lower():
+                elif "tõlkija" in role:
                     result.translators.append(name)
-                elif "kujundaja" in role.lower():
+                elif "kujundaja" in role:
                     result.designers.append(name)
-                elif "fotograaf" in role.lower():
+                elif "fotograaf" in role:
                     result.photographers.append(name)
 
         results.append(result)

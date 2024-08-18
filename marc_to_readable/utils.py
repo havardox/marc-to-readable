@@ -55,3 +55,10 @@ def extract_archive(
             return extract_to / archive.getnames()[0]
     else:
         raise ValueError(f"Unsupported archive format: {archive_path.suffix}")
+
+
+def reverse_name(name: str) -> str:
+    parts = name.split(",")
+    if len(parts) == 2:
+        return f"{parts[1]}{parts[0]}"
+    return name

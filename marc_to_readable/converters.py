@@ -6,6 +6,8 @@ from typing import List, Optional, Union, IO
 import pymarc
 from pymarc import Field, Record
 
+from marc_to_readable.utils import reverse_name
+
 
 @dataclass
 class ReadableRecord:
@@ -66,6 +68,8 @@ def marcxml_to_readable(
         if title_field:
             result.title = get_stripped_subfield(title_field, "a")
             result.subtitle = get_stripped_subfield(title_field, "b")
+            if "b14256381" in result.ester_id:
+                print(f"The subtitle is {result.subtitle}")
             part_number = get_stripped_subfield(title_field, "n")
             if part_number:
                 part_number_match = re.match(NUMBER_REGEX, part_number)
@@ -76,6 +80,7 @@ def marcxml_to_readable(
         # Extract Authors (Fields 100 and 700 - subfield a)
         author = get_stripped_subfield(record.get("100", {}), "a")
         if author:
+            author = reverse_name(author)
             result.authors.append(author)
 
         pub_field = record.get("260")
@@ -154,6 +159,7 @@ def marcxml_to_readable(
             )
             name = get_stripped_subfield(field, "a")
             if role and name:
+                name = reverse_name(name)
                 role = role.lower()
                 if "autor" in role and name not in result.authors:
                     result.authors.append(name)

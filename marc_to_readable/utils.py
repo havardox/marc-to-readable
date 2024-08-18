@@ -58,7 +58,7 @@ def extract_archive(
 
 
 def reverse_name(name: str) -> str:
-    parts = name.split(",")
+    parts = name.split(", ")
     if len(parts) == 2:
-        return f"{parts[1]}{parts[0]}"
+        return f"{parts[1]} {parts[0]}"
     return name

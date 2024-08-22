@@ -58,7 +58,7 @@ def marcxml_to_readable(
 
     for record in records:
         if skip_digital:
-            fixed_field_value = record.get("008").value
+            fixed_field_value = record.get("008").value()
             if fixed_field_value[23] == "q" or fixed_field_value[23] == "s":
                 continue
 

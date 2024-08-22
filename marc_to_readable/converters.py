@@ -41,7 +41,14 @@ def get_stripped_subfield(field: Field, subfield_code: str) -> Optional[str]:
     value = field.get(subfield_code)
     if value:
         return value.strip().strip(";:,./").strip()
-    return None
+
+def get_stripped_subfields(field: Field, subfield_code: str) -> Optional[str]:
+    values = field.get_subfields(subfield_code)
+    stripped_values = []
+    if len(values) > 0:
+        for value in values:
+            stripped_values.append(value.strip().strip(";:,./").strip())
+        return stripped_values
 
 
 NUMBER_REGEX = re.compile(r"\d+", re.IGNORECASE)
@@ -71,12 +78,9 @@ def marcxml_to_readable(
             result.subtitle = get_stripped_subfield(title_field, "b")
             if "b14256381" in result.ester_id:
                 print(f"The subtitle is {result.subtitle}")
-            part_number = get_stripped_subfield(title_field, "n")
-            if part_number:
-                part_number_match = re.match(NUMBER_REGEX, part_number)
-                result.part_number = (
-                    part_number_match.group() if part_number_match else part_number
-                )
+            part_numbers = get_stripped_subfields(title_field, "n")
+            if part_numbers:
+                result.part_number = ", ".join(part_numbers)
 
         edition_field = record.get("250")
         if edition_field:

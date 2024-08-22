@@ -15,13 +15,14 @@ class ReadableRecord:
     title: Optional[str] = None
     subtitle: Optional[str] = None
     part_number: Optional[str] = None
+    edition: Optional[str] = None
     authors: List[str] = field(default_factory=list)
     publisher: Optional[str] = None
     year_published: Optional[str] = None
     city_published: Optional[str] = None
     num_pages: Optional[int] = None
     isbn: Optional[str] = None
-    series: Optional[str] = None
+    series: Optional[str] = None    
     series_number: Optional[str] = None
     dimensions: Optional[str] = None
     language: Optional[str] = None
@@ -49,11 +50,10 @@ YEAR_REGEX = re.compile(r"\d{4}")
 
 
 def marcxml_to_readable(
-    src: Union[str, os.PathLike, IO[bytes]]
+    src: Union[str, os.PathLike, IO[bytes]], skip_digital: bool = False,
 ) -> List[ReadableRecord]:
     # Parse MARCXML records
     records: List[Record] = pymarc.marcxml.parse_xml_to_array(src)
-    
     results = []
 
     for record in records:
@@ -77,6 +77,10 @@ def marcxml_to_readable(
                 result.part_number = (
                     part_number_match.group() if part_number_match else part_number
                 )
+
+        edition_field = record.get("250")
+        if edition_field:
+            result.edition = get_stripped_subfield(edition_field, "a")
 
         # Extract Authors (Fields 100 and 700 - subfield a)
         author = get_stripped_subfield(record.get("100", {}), "a")
@@ -162,21 +166,21 @@ def marcxml_to_readable(
             if role and name:
                 name = reverse_name(name)
                 role = role.lower()
-                if "autor" in role and name not in result.authors:
+                if "autor" == role and name not in result.authors:
                     result.authors.append(name)
-                if "toimetaja" in role:
+                if "toimetaja" == role:
                     result.editors.append(name)
-                elif "väljaandja" in role:
+                elif "väljaandja" == role:
                     result.publishers.append(name)
-                elif "koostaja" in role:
+                elif "koostaja" == role:
                     result.compilers.append(name)
-                elif "illustreerija" in role:
+                elif "illustreerija" == role:
                     result.illustrators.append(name)
-                elif "tõlkija" in role:
+                elif "tõlkija" == role:
                     result.translators.append(name)
-                elif "kujundaja" in role:
+                elif "kujundaja" == role:
                     result.designers.append(name)
-                elif "fotograaf" in role:
+                elif "fotograaf" == role:
                     result.photographers.append(name)
 
         results.append(result)

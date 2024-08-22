@@ -57,9 +57,10 @@ def marcxml_to_readable(
     results = []
 
     for record in records:
-        medium = record.get("020", {}).get("q")
-        if medium and "epub" in medium.lower():
-            continue
+        if skip_digital:
+            fixed_field_value = record.get("008").value
+            if fixed_field_value[23] == "q" or fixed_field_value[23] == "s":
+                continue
 
         result = ReadableRecord(ester_id=record.get("001").value())
 

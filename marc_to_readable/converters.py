@@ -15,6 +15,7 @@ class ReadableRecord:
     title: Optional[str] = None
     subtitle: Optional[str] = None
     part_number: Optional[str] = None
+    part_name: Optional[str] = None
     edition: Optional[str] = None
     authors: List[str] = field(default_factory=list)
     publisher: Optional[str] = None
@@ -81,6 +82,10 @@ def marcxml_to_readable(
             part_numbers = get_stripped_subfields(title_field, "n")
             if part_numbers:
                 result.part_number = ", ".join(part_numbers)
+
+            part_names = get_stripped_subfields(title_field, "p")
+            if part_names:
+                result.part_name = ", ".join(part_names)
 
         edition_field = record.get("250")
         if edition_field:

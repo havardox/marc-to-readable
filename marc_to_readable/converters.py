@@ -41,14 +41,14 @@ class ReadableRecord:
 def get_stripped_subfield(field: Field, subfield_code: str) -> Optional[str]:
     value = field.get(subfield_code)
     if value:
-        return value.strip().strip("[];:,./").strip()
+        return value.strip().strip("[];:,./ ").strip()
 
 def get_stripped_subfields(field: Field, subfield_code: str) -> Optional[str]:
     values = field.get_subfields(subfield_code)
     stripped_values = []
     if len(values) > 0:
         for value in values:
-            stripped_values.append(value.strip().strip("[];:,./").strip())
+            stripped_values.append(value.strip().strip("[];:,./ ").strip())
         return stripped_values
 
 
@@ -69,7 +69,6 @@ def marcxml_to_readable(
         if skip_digital:
             fixed_field_value = record.get("008").value()
             if fixed_field_value[23] == "q" or fixed_field_value[23] == "s":
-                print(f"Skipping digital record {ester_id}")
                 continue
 
         result = ReadableRecord(ester_id=ester_id)

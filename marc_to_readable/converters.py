@@ -25,7 +25,7 @@ class ReadableRecord:
     edition: Optional[str] = ""
     authors: List[str] = field(default_factory=list)
     publisher: Optional[str] = ""
-    year_published: Optional[str] = ""
+    year_published: Optional[int] = None
     city_published: Optional[str] = ""
     num_pages: Optional[int] = ""
     isbn: Optional[str] = ""
@@ -123,7 +123,7 @@ def marcxml_to_readable(
             if year_published_subfield:
                 year_published = re.search(YEAR_REGEX, year_published_subfield)
                 result.year_published = (
-                    year_published.group() if year_published else None
+                    int(year_published.group()) if year_published else None
                 )
 
             # Extract City Published (Field 260 - subfield a)

@@ -9,6 +9,12 @@ from pymarc import Field, Record
 from marc_to_readable.utils import reverse_name
 
 
+NUMBER_REGEX = re.compile(r"\d+", re.IGNORECASE)
+SQUARE_BRACKETS_REGEX = re.compile(r'\[.*?\]')
+WHITESPACE_REGEX = re.compile(r"\s+")
+YEAR_REGEX = re.compile(r"\d{4}")
+
+
 @dataclass
 class ReadableRecord:
     ester_id: str
@@ -23,7 +29,7 @@ class ReadableRecord:
     city_published: Optional[str] = None
     num_pages: Optional[int] = None
     isbn: Optional[str] = None
-    series: Optional[str] = None    
+    series: Optional[str] = None
     series_number: Optional[str] = None
     dimensions: Optional[str] = None
     language: Optional[str] = None
@@ -38,34 +44,44 @@ class ReadableRecord:
     photographers: List[str] = field(default_factory=list)  # fotograafid
 
 
-def get_stripped_subfield(field: Field, subfield_code: str) -> Optional[str]:
+def get_stripped_subfield(field: "Field", subfield_code: str) -> Optional[str]:
     value = field.get(subfield_code)
     if value:
-        return value.strip().strip("[];:,./ ").strip()
+        cleaned_value = value.strip()
+        # Apply regex to remove unwanted bracketed content
+        cleaned_value = SQUARE_BRACKETS_REGEX.sub("", cleaned_value)
+        cleaned_value = WHITESPACE_REGEX.sub(" ", cleaned_value)
+        # Strip any remaining unwanted characters
+        return cleaned_value.strip().strip(";:,./ ")
+    return None
 
-def get_stripped_subfields(field: Field, subfield_code: str) -> Optional[str]:
+
+# Function to strip and clean multiple subfields
+def get_stripped_subfields(field: "Field", subfield_code: str) -> Optional[List[str]]:
     values = field.get_subfields(subfield_code)
-    stripped_values = []
+    cleaned_values = []
     if len(values) > 0:
         for value in values:
-            stripped_values.append(value.strip().strip("[];:,./ ").strip())
-        return stripped_values
-
-
-NUMBER_REGEX = re.compile(r"\d+", re.IGNORECASE)
-BETWEEN_SQUARE_BRACKETS_REGEX = re.compile(r"\[(.*?)\]|(.*)", re.IGNORECASE)
-YEAR_REGEX = re.compile(r"\d{4}")
+            cleaned_value = value.strip()
+            # Apply regex to remove unwanted bracketed content
+            cleaned_value = SQUARE_BRACKETS_REGEX.sub("", cleaned_value)
+            cleaned_value = WHITESPACE_REGEX.sub(" ", cleaned_value)
+            # Strip any remaining unwanted characters
+            cleaned_values.append(cleaned_value.strip().strip(";:,./ "))
+        return cleaned_values
+    return None
 
 
 def marcxml_to_readable(
-    src: Union[str, os.PathLike, IO[bytes]], skip_digital: bool = False,
+    src: Union[str, os.PathLike, IO[bytes]],
+    skip_digital: bool = False,
 ) -> List[ReadableRecord]:
-    # Parse MARCXML records 
+    # Parse MARCXML records
     records: List[Record] = pymarc.marcxml.parse_xml_to_array(src)
     results = []
 
     for record in records:
-        ester_id=record.get("001").value()
+        ester_id = record.get("001").value()
         if skip_digital:
             fixed_field_value = record.get("008").value()
             if fixed_field_value[23] == "q" or fixed_field_value[23] == "s":
@@ -107,19 +123,12 @@ def marcxml_to_readable(
             year_published_subfield = get_stripped_subfield(pub_field, "c")
             if year_published_subfield:
                 year_published = re.search(YEAR_REGEX, year_published_subfield)
-                result.year_published = year_published.group() if year_published else None
+                result.year_published = (
+                    year_published.group() if year_published else None
+                )
 
             # Extract City Published (Field 260 - subfield a)
-            city_published_subfield = get_stripped_subfield(pub_field, "a")
-
-            if city_published_subfield:
-                city_published = re.search(
-                    BETWEEN_SQUARE_BRACKETS_REGEX, city_published_subfield
-                )
-                if city_published.group(1):
-                    result.city_published = city_published.group(1)
-                else:
-                    result.city_published = city_published.group(2)
+            result.city_published = get_stripped_subfield(pub_field, "a")
 
         # Extract ISBN (Field 020 - subfield a)
         isbn_field = record.get("020")

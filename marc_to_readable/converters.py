@@ -10,7 +10,7 @@ from marc_to_readable.utils import reverse_name
 
 
 NUMBER_REGEX = re.compile(r"\d+", re.IGNORECASE)
-SQUARE_BRACKETS_REGEX = re.compile(r"\[.*?\]")
+SQUARE_BRACKETS_REGEX = re.compile(r"\[.*?\]/s+")
 WHITESPACE_REGEX = re.compile(r"\s+")
 YEAR_REGEX = re.compile(r"\d{4}")
 
@@ -52,7 +52,7 @@ def get_stripped_subfield(field: "Field", subfield_code: str) -> str:
         cleaned_value = SQUARE_BRACKETS_REGEX.sub("", cleaned_value)
         cleaned_value = WHITESPACE_REGEX.sub(" ", cleaned_value)
         # Strip any remaining unwanted characters
-        return cleaned_value.strip().strip(";:,./ ")
+        return cleaned_value.strip().strip(";:,./[] ")
     return ""
 
 
@@ -67,7 +67,7 @@ def get_stripped_subfields(field: "Field", subfield_code: str) -> List[str]:
             cleaned_value = SQUARE_BRACKETS_REGEX.sub("", cleaned_value)
             cleaned_value = WHITESPACE_REGEX.sub(" ", cleaned_value)
             # Strip any remaining unwanted characters
-            cleaned_values.append(cleaned_value.strip().strip(";:,./ "))
+            cleaned_values.append(cleaned_value.strip().strip(";:,./[] "))
     return cleaned_values
 
 

@@ -10,7 +10,7 @@ from marc_to_readable.utils import reverse_name
 
 
 NUMBER_REGEX = re.compile(r"\d+", re.IGNORECASE)
-SQUARE_BRACKETS_REGEX = re.compile(r'\[.*?\]')
+SQUARE_BRACKETS_REGEX = re.compile(r"\[.*?\]")
 WHITESPACE_REGEX = re.compile(r"\s+")
 YEAR_REGEX = re.compile(r"\d{4}")
 
@@ -18,22 +18,22 @@ YEAR_REGEX = re.compile(r"\d{4}")
 @dataclass
 class ReadableRecord:
     ester_id: str
-    title: Optional[str] = ""
-    subtitle: Optional[str] = ""
-    part_number: Optional[str] = ""
-    part_name: Optional[str] = ""
-    edition: Optional[str] = ""
+    title: str = ""
+    subtitle: str = ""
+    part_number: str = ""
+    part_name: str = ""
+    edition: str = ""
     authors: List[str] = field(default_factory=list)
-    publisher: Optional[str] = ""
+    publisher: str = ""
     year_published: Optional[int] = None
-    city_published: Optional[str] = ""
-    num_pages: Optional[int] = ""
-    isbn: Optional[str] = ""
-    series: Optional[str] = ""
-    series_number: Optional[str] = ""
-    dimensions: Optional[str] = ""
-    language: Optional[str] = ""
-    original_language: Optional[str] = ""
+    city_published: str = ""
+    num_pages: Optional[int] = None
+    isbn: str = ""
+    series: str = ""
+    series_number: str = ""
+    dimensions: str = ""
+    language: str = ""
+    original_language: str = ""
     genres: List[str] = field(default_factory=list)
     editors: List[str] = field(default_factory=list)  # toimetajad
     publishers: List[str] = field(default_factory=list)  # väljaandjad
@@ -152,7 +152,7 @@ def marcxml_to_readable(
             num_pages_subfield = get_stripped_subfield(physical_description_field, "a")
             if num_pages_subfield:
                 num_pages = re.match(NUMBER_REGEX, num_pages_subfield)
-                result.num_pages = num_pages.group() if num_pages else None
+                result.num_pages = int(num_pages.group()) if num_pages else None
 
             # Extract Dimensions (Field 300 - subfield c)
             result.dimensions = get_stripped_subfield(physical_description_field, "c")

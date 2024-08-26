@@ -18,22 +18,22 @@ YEAR_REGEX = re.compile(r"\d{4}")
 @dataclass
 class ReadableRecord:
     ester_id: str
-    title: Optional[str] = None
-    subtitle: Optional[str] = None
-    part_number: Optional[str] = None
-    part_name: Optional[str] = None
-    edition: Optional[str] = None
+    title: Optional[str] = ""
+    subtitle: Optional[str] = ""
+    part_number: Optional[str] = ""
+    part_name: Optional[str] = ""
+    edition: Optional[str] = ""
     authors: List[str] = field(default_factory=list)
-    publisher: Optional[str] = None
-    year_published: Optional[str] = None
-    city_published: Optional[str] = None
-    num_pages: Optional[int] = None
-    isbn: Optional[str] = None
-    series: Optional[str] = None
-    series_number: Optional[str] = None
-    dimensions: Optional[str] = None
-    language: Optional[str] = None
-    original_language: Optional[str] = None
+    publisher: Optional[str] = ""
+    year_published: Optional[str] = ""
+    city_published: Optional[str] = ""
+    num_pages: Optional[int] = ""
+    isbn: Optional[str] = ""
+    series: Optional[str] = ""
+    series_number: Optional[str] = ""
+    dimensions: Optional[str] = ""
+    language: Optional[str] = ""
+    original_language: Optional[str] = ""
     genres: List[str] = field(default_factory=list)
     editors: List[str] = field(default_factory=list)  # toimetajad
     publishers: List[str] = field(default_factory=list)  # väljaandjad
@@ -44,7 +44,7 @@ class ReadableRecord:
     photographers: List[str] = field(default_factory=list)  # fotograafid
 
 
-def get_stripped_subfield(field: "Field", subfield_code: str) -> Optional[str]:
+def get_stripped_subfield(field: "Field", subfield_code: str) -> str:
     value = field.get(subfield_code)
     if value:
         cleaned_value = value.strip()
@@ -53,11 +53,11 @@ def get_stripped_subfield(field: "Field", subfield_code: str) -> Optional[str]:
         cleaned_value = WHITESPACE_REGEX.sub(" ", cleaned_value)
         # Strip any remaining unwanted characters
         return cleaned_value.strip().strip(";:,./ ")
-    return None
+    return ""
 
 
 # Function to strip and clean multiple subfields
-def get_stripped_subfields(field: "Field", subfield_code: str) -> Optional[List[str]]:
+def get_stripped_subfields(field: "Field", subfield_code: str) -> List[str]:
     values = field.get_subfields(subfield_code)
     cleaned_values = []
     if len(values) > 0:
@@ -68,8 +68,7 @@ def get_stripped_subfields(field: "Field", subfield_code: str) -> Optional[List[
             cleaned_value = WHITESPACE_REGEX.sub(" ", cleaned_value)
             # Strip any remaining unwanted characters
             cleaned_values.append(cleaned_value.strip().strip(";:,./ "))
-        return cleaned_values
-    return None
+    return cleaned_values
 
 
 def marcxml_to_readable(

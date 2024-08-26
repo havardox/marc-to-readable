@@ -10,7 +10,7 @@ from marc_to_readable.utils import reverse_name
 
 
 NUMBER_REGEX = re.compile(r"\d+", re.IGNORECASE)
-SQUARE_BRACKETS_REGEX = re.compile(r"\[.*?\]/s+")
+SQUARE_BRACKETS_REGEX = re.compile(r"\[.*?\]\s+")
 YEAR_REGEX = re.compile(r"\d{4}")
 
 

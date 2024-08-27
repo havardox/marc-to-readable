@@ -10,7 +10,8 @@ from marc_to_readable.utils import reverse_name
 
 
 NUMBER_REGEX = re.compile(r"\d+", re.IGNORECASE)
-SQUARE_BRACKETS_REGEX = re.compile(r"\[.*?\]\s+")
+SQUARE_BRACKETS_REGEX = re.compile(r"\[(.*?)\]")
+WHITESPACE_REGEX = re.compile(r"\s+")
 YEAR_REGEX = re.compile(r"\d{4}")
 
 
@@ -47,8 +48,10 @@ def get_stripped_subfield(field: "Field", subfield_code: str) -> str:
     value = field.get(subfield_code)
     if value:
         cleaned_value = value.strip()
-        # Apply regex to remove unwanted bracketed content
-        cleaned_value = SQUARE_BRACKETS_REGEX.sub("", cleaned_value)
+        # Extract content inside square brackets and replace brackets with spaces
+        cleaned_value = SQUARE_BRACKETS_REGEX.sub(r"\1", cleaned_value)
+        # Replace multiple spaces with a single space
+        cleaned_value = WHITESPACE_REGEX.sub(" ", cleaned_value)
         # Strip any remaining unwanted characters
         return cleaned_value.strip().strip(";:,./[] ")
     return ""
@@ -61,8 +64,10 @@ def get_stripped_subfields(field: "Field", subfield_code: str) -> List[str]:
     if len(values) > 0:
         for value in values:
             cleaned_value = value.strip()
-            # Apply regex to remove unwanted bracketed content
-            cleaned_value = SQUARE_BRACKETS_REGEX.sub("", cleaned_value)
+            # Extract content inside square brackets and replace brackets with spaces
+            cleaned_value = SQUARE_BRACKETS_REGEX.sub(r"\1", cleaned_value)
+            # Replace multiple spaces with a single space
+            cleaned_value = WHITESPACE_REGEX.sub(" ", cleaned_value)
             # Strip any remaining unwanted characters
             cleaned_values.append(cleaned_value.strip().strip(";:,./[] "))
     return cleaned_values
